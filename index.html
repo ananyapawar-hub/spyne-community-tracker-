@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Spyne Circles Moderator Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --orange: #D94F04;
+    --orange-light: #FF664D;
+    --bg: #0A0A0B;
+    --bg-2: #131316;
+    --bg-3: #1B1B1F;
+    --bg-4: #25252B;
+    --line: #2A2A30;
+    --text: #F4F4F5;
+    --muted: #9A9AA0;
+    --muted-2: #6E6E76;
+    --green: #22C55E;
+    --yellow: #EAB308;
+    --blue: #3B82F6;
+    --red: #EF4444;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    font-size: 14px;
+  }
+  h1, h2, h3 { font-family: 'Syne', 'DM Sans', system-ui, sans-serif; font-weight: 700; letter-spacing: -0.01em; }
+  button { font-family: inherit; cursor: pointer; }
+  input, select, textarea {
+    font-family: inherit;
+    background: var(--bg-3);
+    color: var(--text);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 14px;
+    width: 100%;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input:focus, select:focus, textarea:focus { border-color: var(--orange); }
+  textarea { resize: vertical; min-height: 80px; }
+  label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
+  .btn {
+    background: var(--orange);
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background .15s;
+  }
+  .btn:hover { background: var(--orange-light); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover { background: var(--bg-3); }
+  .btn-danger { background: var(--red); }
+  .btn-danger:hover { background: #dc2626; }
+  .btn-sm { padding: 6px 10px; font-size: 12px; }
+
+  /* ---------- Login ---------- */
+  #loginScreen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background:
+      radial-gradient(900px 600px at 80% -10%, rgba(217, 79, 4, 0.18), transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, rgba(255, 102, 77, 0.12), transparent 60%),
+      var(--bg);
+  }
+  .login-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 32px;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 24px;
+  }
+  .brand-mark {
+    width: 32px; height: 32px;
+    background: var(--orange);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #fff;
+  }
+  .brand-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; }
+  .brand-sub { color: var(--muted); font-size: 12px; }
+  .login-card h1 { font-size: 22px; margin-bottom: 6px; }
+  .login-card p { color: var(--muted); margin-bottom: 20px; }
+  .login-card .form-row { margin-bottom: 14px; }
+  .login-card .btn { width: 100%; margin-top: 6px; }
+  .login-error {
+    background: rgba(239, 68, 68, 0.12);
+    color: #fecaca;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .login-hint {
+    margin-top: 16px;
+    padding: 12px;
+    background: var(--bg-3);
+    border: 1px dashed var(--line);
+    border-radius: 8px;
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  /* ---------- App shell ---------- */
+  #app { display: none; min-height: 100vh; }
+  .layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+  .sidebar {
+    background: var(--bg-2);
+    border-right: 1px solid var(--line);
+    padding: 20px 14px;
+    display: flex; flex-direction: column;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 12px;
+    border-radius: 8px;
+    color: var(--muted);
+    font-weight: 500;
+    cursor: pointer;
+    margin-bottom: 2px;
+    font-size: 13px;
+    transition: background .15s, color .15s;
+  }
+  .nav-item:hover { background: var(--bg-3); color: var(--text); }
+  .nav-item.active { background: var(--bg-3); color: var(--text); }
+  .nav-item.active::before {
+    content: ''; width: 3px; height: 16px; background: var(--orange); border-radius: 2px;
+  }
+  .sidebar-section {
+    text-transform: uppercase;
+    font-size: 10px;
+    color: var(--muted-2);
+    letter-spacing: 0.08em;
+    margin: 14px 12px 8px;
+    font-weight: 600;
+  }
+  .sidebar-footer {
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid var(--line);
+  }
+  .user-chip {
+    padding: 10px 12px;
+    background: var(--bg-3);
+    border-radius: 8px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .avatar {
+    width: 30px; height: 30px;
+    background: var(--orange);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .user-chip-name { font-size: 13px; font-weight: 600; }
+  .user-chip-role { font-size: 11px; color: var(--muted); text-transform: capitalize; }
+
+  .main { padding: 28px 32px; overflow-x: auto; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 22px;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .topbar h1 { font-size: 22px; }
+  .topbar-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  /* ---------- Filters bar ---------- */
+  .filters {
+    display: flex; gap: 10px; flex-wrap: wrap;
+    margin-bottom: 16px;
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .filters input, .filters select { width: auto; min-width: 160px; }
+
+  /* ---------- Table ---------- */
+  .table-wrap {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  th, td {
+    padding: 12px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--line);
+    font-size: 13px;
+    vertical-align: top;
+  }
+  th {
+    background: var(--bg-3);
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+  }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--bg-3); }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: capitalize;
+    background: var(--bg-4);
+    color: var(--text);
+  }
+  .badge-stage-Draft { background: rgba(154, 154, 160, 0.18); color: #d4d4d8; }
+  .badge-stage-In-Progress { background: rgba(59, 130, 246, 0.18); color: #93c5fd; }
+  .badge-stage-In-Review { background: rgba(234, 179, 8, 0.18); color: #fde68a; }
+  .badge-stage-Done { background: rgba(34, 197, 94, 0.18); color: #86efac; }
+  .badge-team { background: rgba(217, 79, 4, 0.15); color: #ffb89a; }
+
+  .empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  /* ---------- Kanban ---------- */
+  .kanban {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(240px, 1fr));
+    gap: 14px;
+  }
+  .kanban-col {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 12px;
+    min-height: 200px;
+  }
+  .kanban-col h3 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 12px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .kanban-col h3 .count {
+    background: var(--bg-4);
+    color: var(--text);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 11px;
+  }
+  .kanban-card {
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color .15s, transform .15s;
+  }
+  .kanban-card:hover { border-color: var(--orange); transform: translateY(-1px); }
+  .kanban-card-title { font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+  .kanban-card-meta {
+    display: flex; gap: 6px; flex-wrap: wrap;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ---------- Modal ---------- */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 100;
+    padding: 20px;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--bg-2);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+  }
+  .modal h2 { font-size: 18px; margin-bottom: 18px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-row { margin-bottom: 12px; }
+  .modal-actions {
+    display: flex; justify-content: space-between;
+    margin-top: 16px;
+    gap: 8px;
+  }
+  .modal-actions-right { display: flex; gap: 8px; }
+
+  /* ---------- Toast ---------- */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--bg-3);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    z-index: 200;
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity .2s, transform .2s;
+    pointer-events: none;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.error { border-color: var(--red); color: #fecaca; }
+  .toast.success { border-color: var(--green); color: #86efac; }
+
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { position: relative; height: auto; }
+    .kanban { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN SCREEN ============ -->
+<div id="loginScreen">
+  <form class="login-card" id="loginForm">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div>
+        <div class="brand-name">Spyne</div>
+        <div class="brand-sub">Circles Moderator Tracker</div>
+      </div>
+    </div>
+    <h1>Sign in</h1>
+    <p>Track community moderation across teams.</p>
+    <div id="loginError" class="login-error" style="display:none"></div>
+    <div class="form-row">
+      <label>Email</label>
+      <input type="email" id="loginEmail" autocomplete="username" required />
+    </div>
+    <div class="form-row">
+      <label>Password</label>
+      <input type="password" id="loginPassword" autocomplete="current-password" required />
+    </div>
+    <button class="btn" type="submit">Sign in</button>
+    <div class="login-hint">
+      Default admin: <strong>admin@spyne.ai</strong> / <strong>spyne2024</strong><br />
+      First load may take ~30s on Render free tier.
+    </div>
+  </form>
+</div>
+
+<!-- ============ APP SHELL ============ -->
+<div id="app">
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand" style="margin-bottom:18px">
+        <div class="brand-mark">S</div>
+        <div>
+          <div class="brand-name">Spyne</div>
+          <div class="brand-sub">Circles Tracker</div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">Workspace</div>
+      <div class="nav-item" data-view="all">All Items</div>
+      <div class="nav-item" data-view="kanban">Board View</div>
+      <div class="nav-item" data-view="queue">My Queue</div>
+
+      <div class="sidebar-section" id="adminSection" style="display:none">Admin</div>
+      <div class="nav-item" data-view="team" id="navTeam" style="display:none">Team Members</div>
+
+      <div class="sidebar-section">Account</div>
+      <div class="nav-item" data-view="profile">Profile</div>
+
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="avatar" id="userInitial">A</div>
+          <div style="flex:1; min-width:0">
+            <div class="user-chip-name" id="userName">—</div>
+            <div class="user-chip-role" id="userRole">—</div>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" style="width:100%; margin-top:8px" id="logoutBtn">Sign out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <div id="viewSlot"></div>
+    </main>
+  </div>
+</div>
+
+<!-- ============ ITEM MODAL ============ -->
+<div class="modal-backdrop" id="itemModal">
+  <div class="modal">
+    <h2 id="itemModalTitle">New item</h2>
+    <form id="itemForm">
+      <input type="hidden" id="itemId" />
+      <div class="form-row">
+        <label>Title *</label>
+        <input id="f_title" required />
+      </div>
+      <div class="grid-2">
+        <div class="form-row">
+          <label>Content type</label>
+          <select id="f_content_type">
+            <option value="">—</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Category</label>
+          <input id="f_category" placeholder="e.g. Dealer Tips" />
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Description</label>
+        <textarea id="f_description"></textarea>
+      </div>
+      <div class="grid-2">
+        <div class="form-row">
+          <label>Assigned team</label>
+          <select id="f_assigned_team">
+            <option value="">—</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <label>Stage</label>
+          <select id="f_stage">
+            <option>Draft</option><option>In Progress</option><option>In Review</option><option>Done</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <label>Due date</label>
+        <input type="date" id="f_due_date" />
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost btn-danger" id="deleteBtn" style="display:none">Delete</button>
+        <div class="modal-actions-right" style="margin-left:auto">
+          <button type="button" class="btn btn-ghost" id="cancelItemBtn">Cancel</button>
+          <button type="submit" class="btn">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ============ USER MODAL ============ -->
+<div class="modal-backdrop" id="userModal">
+  <div class="modal">
+    <h2 id="userModalTitle">Add team member</h2>
+    <form id="userForm">
+      <input type="hidden" id="userId" />
+      <div class="grid-2">
+        <div class="form-row">
+          <label>Name *</label>
+          <input id="u_name" required />
+        </div>
+        <div class="form-row">
+          <label>Email *</label>
+          <input type="email" id="u_email" required />
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-row">
+          <label>Role *</label>
+          <select id="u_role" required></select>
+        </div>
+        <div class="form-row">
+          <label id="passwordLabel">Password *</label>
+          <input type="text" id="u_password" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost btn-danger" id="deleteUserBtn" style="display:none">Delete</button>
+        <div class="modal-actions-right" style="margin-left:auto">
+          <button type="button" class="btn btn-ghost" id="cancelUserBtn">Cancel</button>
+          <button type="submit" class="btn">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// =============================================================
+// API + state
+// =============================================================
+const TOKEN_KEY = 'spyne_circles_token';
+const state = {
+  user: null,
+  meta: { roles: [], stages: [], contentTypes: [] },
+  items: [],
+  users: [],
+  view: 'all',
+  filters: { q: '', stage: '', team: '' },
+};
+
+function getToken() {
+  return localStorage.getItem(TOKEN_KEY) || window._authToken || null;
+}
+function setToken(t) {
+  if (t) {
+    localStorage.setItem(TOKEN_KEY, t);
+    window._authToken = t;
+  } else {
+    localStorage.removeItem(TOKEN_KEY);
+    window._authToken = null;
+  }
+}
+
+async function api(path, opts = {}) {
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  const token = getToken();
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  const res = await fetch(path, { ...opts, headers });
+  if (res.status === 401) {
+    setToken(null);
+    showLogin();
+    throw new Error('Unauthorized');
+  }
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+function toast(msg, type = 'success') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + type;
+  setTimeout(() => { el.className = 'toast'; }, 2400);
+}
+
+function fmtRole(r) {
+  if (!r) return '';
+  return r.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
+}
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+// =============================================================
+// Auth flow
+// =============================================================
+function showLogin() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+}
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+}
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const password = document.getElementById('loginPassword').value;
+  const errEl = document.getElementById('loginError');
+  errEl.style.display = 'none';
+  try {
+    const data = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    }).then(r => r.json().then(d => ({ ok: r.ok, d })));
+    if (!data.ok) throw new Error(data.d.error || 'Sign in failed');
+    setToken(data.d.token);
+    state.user = data.d.user;
+    await bootApp();
+  } catch (err) {
+    errEl.textContent = err.message;
+    errEl.style.display = 'block';
+  }
+});
+
+document.getElementById('logoutBtn').addEventListener('click', () => {
+  setToken(null);
+  location.reload();
+});
+
+// =============================================================
+// Boot
+// =============================================================
+async function bootApp() {
+  try {
+    if (!state.user) {
+      const me = await api('/api/me');
+      state.user = me.user;
+    }
+    state.meta = await api('/api/meta');
+    populateMetaSelects();
+    showApp();
+    paintUserChip();
+    setActiveView(localStorage.getItem('spyne_last_view') || 'all');
+  } catch (e) {
+    showLogin();
+  }
+}
+
+function paintUserChip() {
+  document.getElementById('userInitial').textContent = (state.user.name || '?').charAt(0).toUpperCase();
+  document.getElementById('userName').textContent = state.user.name;
+  document.getElementById('userRole').textContent = fmtRole(state.user.role);
+  if (state.user.role === 'admin') {
+    document.getElementById('adminSection').style.display = '';
+    document.getElementById('navTeam').style.display = '';
+  }
+}
+
+function populateMetaSelects() {
+  const teamSelect = document.getElementById('f_assigned_team');
+  teamSelect.innerHTML = '<option value="">—</option>' +
+    state.meta.roles.filter(r => r !== 'admin').map(r => `<option value="${r}">${fmtRole(r)}</option>`).join('');
+
+  const ctSelect = document.getElementById('f_content_type');
+  ctSelect.innerHTML = '<option value="">—</option>' +
+    state.meta.contentTypes.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  const uRole = document.getElementById('u_role');
+  uRole.innerHTML = state.meta.roles.map(r =>
+    `<option value="${r}">${fmtRole(r)}</option>`).join('');
+}
+
+// =============================================================
+// Navigation
+// =============================================================
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => setActiveView(el.dataset.view));
+});
+
+function setActiveView(view) {
+  state.view = view;
+  localStorage.setItem('spyne_last_view', view);
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.toggle('active', n.dataset.view === view);
+  });
+  renderView();
+}
+
+async function renderView() {
+  const slot = document.getElementById('viewSlot');
+  slot.innerHTML = '<div class="empty">Loading…</div>';
+  try {
+    if (state.view === 'all') await renderAll(slot);
+    else if (state.view === 'kanban') await renderKanban(slot);
+    else if (state.view === 'queue') await renderQueue(slot);
+    else if (state.view === 'team') await renderTeam(slot);
+    else if (state.view === 'profile') renderProfile(slot);
+  } catch (e) {
+    slot.innerHTML = `<div class="empty">${escapeHtml(e.message)}</div>`;
+  }
+}
+
+// =============================================================
+// View: All Items (table)
+// =============================================================
+async function renderAll(slot) {
+  const data = await api('/api/items');
+  state.items = data.items;
+  slot.innerHTML = `
+    <div class="topbar">
+      <h1>All Items</h1>
+      <div class="topbar-actions">
+        <button class="btn" id="newItemBtn">+ New item</button>
+      </div>
+    </div>
+    <div class="filters">
+      <input id="filter-q" placeholder="Search title…" value="${escapeHtml(state.filters.q)}" />
+      <select id="filter-stage">
+        <option value="">All stages</option>
+        ${state.meta.stages.map(s => `<option value="${s}" ${state.filters.stage===s?'selected':''}>${s}</option>`).join('')}
+      </select>
+      <select id="filter-team">
+        <option value="">All teams</option>
+        ${state.meta.roles.filter(r=>r!=='admin').map(r =>
+          `<option value="${r}" ${state.filters.team===r?'selected':''}>${fmtRole(r)}</option>`).join('')}
+      </select>
+      <button class="btn btn-ghost" id="filter-clear">Clear</button>
+    </div>
+    <div id="tableSlot"></div>
+  `;
+  document.getElementById('newItemBtn').onclick = () => openItemModal();
+  document.getElementById('filter-q').oninput = (e) => { state.filters.q = e.target.value; renderTable(); };
+  document.getElementById('filter-stage').onchange = (e) => { state.filters.stage = e.target.value; renderTable(); };
+  document.getElementById('filter-team').onchange = (e) => { state.filters.team = e.target.value; renderTable(); };
+  document.getElementById('filter-clear').onclick = () => {
+    state.filters = { q: '', stage: '', team: '' };
+    renderAll(slot);
+  };
+  renderTable();
+}
+
+function renderTable() {
+  const slot = document.getElementById('tableSlot');
+  if (!slot) return;
+  const q = state.filters.q.toLowerCase();
+  const items = state.items.filter(it =>
+    (!q || (it.title || '').toLowerCase().includes(q)) &&
+    (!state.filters.stage || it.stage === state.filters.stage) &&
+    (!state.filters.team || it.assigned_team === state.filters.team)
+  );
+  if (items.length === 0) {
+    slot.innerHTML = '<div class="table-wrap"><div class="empty">No items match your filters.</div></div>';
+    return;
+  }
+  slot.innerHTML = `
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th><th>Type</th><th>Category</th><th>Team</th><th>Stage</th><th>Due</th><th>Created by</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${items.map(it => `
+            <tr data-id="${it.id}" style="cursor:pointer">
+              <td><strong>${escapeHtml(it.title)}</strong>
+                ${it.description ? `<div style="color:var(--muted);font-size:12px;margin-top:2px">${escapeHtml((it.description||'').slice(0,90))}${(it.description||'').length>90?'…':''}</div>` : ''}
+              </td>
+              <td>${it.content_type ? `<span class="badge">${escapeHtml(it.content_type)}</span>` : '—'}</td>
+              <td>${escapeHtml(it.category || '—')}</td>
+              <td>${it.assigned_team ? `<span class="badge badge-team">${fmtRole(it.assigned_team)}</span>` : '—'}</td>
+              <td><span class="badge badge-stage-${(it.stage||'Draft').replace(/\\s+/g,'-')}">${escapeHtml(it.stage || 'Draft')}</span></td>
+              <td>${it.due_date ? new Date(it.due_date).toLocaleDateString() : '—'}</td>
+              <td style="color:var(--muted)">${escapeHtml(it.created_by_name || '—')}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  slot.querySelectorAll('tr[data-id]').forEach(tr => {
+    tr.onclick = () => openItemModal(state.items.find(x => x.id === tr.dataset.id));
+  });
+}
+
+// =============================================================
+// View: Kanban
+// =============================================================
+async function renderKanban(slot) {
+  const data = await api('/api/items');
+  state.items = data.items;
+  const cols = state.meta.stages.map(stage => {
+    const items = state.items.filter(i => (i.stage || 'Draft') === stage);
+    return `
+      <div class="kanban-col">
+        <h3>${stage} <span class="count">${items.length}</span></h3>
+        ${items.map(it => `
+          <div class="kanban-card" data-id="${it.id}">
+            <div class="kanban-card-title">${escapeHtml(it.title)}</div>
+            <div class="kanban-card-meta">
+              ${it.content_type ? `<span class="badge">${escapeHtml(it.content_type)}</span>` : ''}
+              ${it.assigned_team ? `<span class="badge badge-team">${fmtRole(it.assigned_team)}</span>` : ''}
+              ${it.due_date ? `<span>· Due ${new Date(it.due_date).toLocaleDateString()}</span>` : ''}
+            </div>
+          </div>
+        `).join('') || '<div class="empty" style="padding:14px">No items</div>'}
+      </div>`;
+  }).join('');
+  slot.innerHTML = `
+    <div class="topbar">
+      <h1>Board View</h1>
+      <div class="topbar-actions">
+        <button class="btn" id="newItemBtn">+ New item</button>
+      </div>
+    </div>
+    <div class="kanban">${cols}</div>
+  `;
+  document.getElementById('newItemBtn').onclick = () => openItemModal();
+  slot.querySelectorAll('.kanban-card').forEach(card => {
+    card.onclick = () => openItemModal(state.items.find(x => x.id === card.dataset.id));
+  });
+}
+
+// =============================================================
+// View: My Queue
+// =============================================================
+async function renderQueue(slot) {
+  if (state.user.role === 'admin') {
+    slot.innerHTML = `
+      <div class="topbar"><h1>My Queue</h1></div>
+      <div class="table-wrap"><div class="empty">Admins don't have a personal queue. View All Items or Board View.</div></div>`;
+    return;
+  }
+  const data = await api('/api/items?mine=1');
+  const items = data.items;
+  slot.innerHTML = `
+    <div class="topbar">
+      <h1>My Queue · ${fmtRole(state.user.role)}</h1>
+      <div class="topbar-actions"><button class="btn" id="newItemBtn">+ New item</button></div>
+    </div>
+    <div class="table-wrap">
+      ${items.length === 0 ? '<div class="empty">No items assigned to your team.</div>' : `
+        <table>
+          <thead><tr><th>Title</th><th>Type</th><th>Stage</th><th>Due</th></tr></thead>
+          <tbody>
+            ${items.map(it => `
+              <tr data-id="${it.id}" style="cursor:pointer">
+                <td><strong>${escapeHtml(it.title)}</strong></td>
+                <td>${it.content_type ? `<span class="badge">${escapeHtml(it.content_type)}</span>` : '—'}</td>
+                <td><span class="badge badge-stage-${(it.stage||'Draft').replace(/\\s+/g,'-')}">${escapeHtml(it.stage||'Draft')}</span></td>
+                <td>${it.due_date ? new Date(it.due_date).toLocaleDateString() : '—'}</td>
+              </tr>`).join('')}
+          </tbody>
+        </table>`}
+    </div>
+  `;
+  document.getElementById('newItemBtn').onclick = () => openItemModal();
+  slot.querySelectorAll('tr[data-id]').forEach(tr => {
+    tr.onclick = () => {
+      const it = items.find(x => x.id === tr.dataset.id);
+      openItemModal(it);
+    };
+  });
+}
+
+// =============================================================
+// View: Team Members (admin only)
+// =============================================================
+async function renderTeam(slot) {
+  if (state.user.role !== 'admin') {
+    slot.innerHTML = '<div class="empty">Admins only.</div>';
+    return;
+  }
+  const data = await api('/api/users');
+  state.users = data.users;
+  slot.innerHTML = `
+    <div class="topbar">
+      <h1>Team Members</h1>
+      <div class="topbar-actions"><button class="btn" id="newUserBtn">+ Add member</button></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead>
+        <tbody>
+          ${state.users.map(u => `
+            <tr data-id="${u.id}" style="cursor:pointer">
+              <td><strong>${escapeHtml(u.name)}</strong></td>
+              <td>${escapeHtml(u.email)}</td>
+              <td><span class="badge badge-team">${fmtRole(u.role)}</span></td>
+              <td style="color:var(--muted)">${new Date(u.created_at).toLocaleDateString()}</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('newUserBtn').onclick = () => openUserModal();
+  slot.querySelectorAll('tr[data-id]').forEach(tr => {
+    tr.onclick = () => openUserModal(state.users.find(x => x.id === tr.dataset.id));
+  });
+}
+
+// =============================================================
+// View: Profile
+// =============================================================
+function renderProfile(slot) {
+  slot.innerHTML = `
+    <div class="topbar"><h1>Profile</h1></div>
+    <div class="table-wrap" style="padding:24px">
+      <div style="display:flex; gap:16px; align-items:center; margin-bottom:18px">
+        <div class="avatar" style="width:56px;height:56px;font-size:22px">${(state.user.name||'?').charAt(0).toUpperCase()}</div>
+        <div>
+          <h2>${escapeHtml(state.user.name)}</h2>
+          <div style="color:var(--muted)">${escapeHtml(state.user.email)}</div>
+        </div>
+      </div>
+      <div style="display:grid; grid-template-columns: 140px 1fr; gap:10px 20px; font-size:14px">
+        <div style="color:var(--muted)">Role</div>
+        <div><span class="badge badge-team">${fmtRole(state.user.role)}</span></div>
+        <div style="color:var(--muted)">Email</div>
+        <div>${escapeHtml(state.user.email)}</div>
+      </div>
+      <div style="margin-top:24px;color:var(--muted);font-size:13px">
+        To change your password, contact an admin.
+      </div>
+    </div>
+  `;
+}
+
+// =============================================================
+// Item modal
+// =============================================================
+const itemModal = document.getElementById('itemModal');
+function openItemModal(item) {
+  document.getElementById('itemModalTitle').textContent = item ? 'Edit item' : 'New item';
+  document.getElementById('itemId').value = item?.id || '';
+  document.getElementById('f_title').value = item?.title || '';
+  document.getElementById('f_content_type').value = item?.content_type || '';
+  document.getElementById('f_category').value = item?.category || '';
+  document.getElementById('f_description').value = item?.description || '';
+  document.getElementById('f_assigned_team').value = item?.assigned_team || '';
+  document.getElementById('f_stage').value = item?.stage || 'Draft';
+  document.getElementById('f_due_date').value = item?.due_date ? item.due_date.slice(0,10) : '';
+
+  // Non-admin team members can't reassign team
+  document.getElementById('f_assigned_team').disabled = (state.user.role !== 'admin');
+
+  document.getElementById('deleteBtn').style.display = (item && state.user.role === 'admin') ? '' : 'none';
+  itemModal.classList.add('open');
+}
+function closeItemModal() { itemModal.classList.remove('open'); }
+document.getElementById('cancelItemBtn').onclick = closeItemModal;
+itemModal.addEventListener('click', (e) => { if (e.target === itemModal) closeItemModal(); });
+
+document.getElementById('itemForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('itemId').value;
+  const payload = {
+    title: document.getElementById('f_title').value,
+    content_type: document.getElementById('f_content_type').value || null,
+    category: document.getElementById('f_category').value || null,
+    description: document.getElementById('f_description').value || null,
+    assigned_team: document.getElementById('f_assigned_team').value || null,
+    stage: document.getElementById('f_stage').value,
+    due_date: document.getElementById('f_due_date').value || null,
+  };
+  try {
+    if (id) {
+      await api('/api/items/' + id, { method: 'PATCH', body: JSON.stringify(payload) });
+      toast('Item updated');
+    } else {
+      await api('/api/items', { method: 'POST', body: JSON.stringify(payload) });
+      toast('Item created');
+    }
+    closeItemModal();
+    renderView();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+});
+
+document.getElementById('deleteBtn').onclick = async () => {
+  const id = document.getElementById('itemId').value;
+  if (!id) return;
+  if (!confirm('Delete this item?')) return;
+  try {
+    await api('/api/items/' + id, { method: 'DELETE' });
+    toast('Item deleted');
+    closeItemModal();
+    renderView();
+  } catch (err) { toast(err.message, 'error'); }
+};
+
+// =============================================================
+// User modal
+// =============================================================
+const userModal = document.getElementById('userModal');
+function openUserModal(user) {
+  document.getElementById('userModalTitle').textContent = user ? 'Edit member' : 'Add member';
+  document.getElementById('userId').value = user?.id || '';
+  document.getElementById('u_name').value = user?.name || '';
+  document.getElementById('u_email').value = user?.email || '';
+  document.getElementById('u_email').disabled = !!user;
+  document.getElementById('u_role').value = user?.role || 'tech_team_1';
+  document.getElementById('u_password').value = '';
+  document.getElementById('passwordLabel').textContent = user ? 'New password (leave blank to keep)' : 'Password *';
+  document.getElementById('u_password').required = !user;
+  document.getElementById('deleteUserBtn').style.display = user ? '' : 'none';
+  userModal.classList.add('open');
+}
+function closeUserModal() { userModal.classList.remove('open'); }
+document.getElementById('cancelUserBtn').onclick = closeUserModal;
+userModal.addEventListener('click', (e) => { if (e.target === userModal) closeUserModal(); });
+
+document.getElementById('userForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const id = document.getElementById('userId').value;
+  const payload = {
+    name: document.getElementById('u_name').value,
+    email: document.getElementById('u_email').value,
+    role: document.getElementById('u_role').value,
+    password: document.getElementById('u_password').value || undefined,
+  };
+  try {
+    if (id) {
+      const update = { name: payload.name, role: payload.role };
+      if (payload.password) update.password = payload.password;
+      await api('/api/users/' + id, { method: 'PATCH', body: JSON.stringify(update) });
+      toast('Member updated');
+    } else {
+      await api('/api/users', { method: 'POST', body: JSON.stringify(payload) });
+      toast('Member added');
+    }
+    closeUserModal();
+    renderView();
+  } catch (err) { toast(err.message, 'error'); }
+});
+
+document.getElementById('deleteUserBtn').onclick = async () => {
+  const id = document.getElementById('userId').value;
+  if (!id) return;
+  if (!confirm('Remove this member?')) return;
+  try {
+    await api('/api/users/' + id, { method: 'DELETE' });
+    toast('Member removed');
+    closeUserModal();
+    renderView();
+  } catch (err) { toast(err.message, 'error'); }
+};
+
+// =============================================================
+// On load
+// =============================================================
+(function init() {
+  if (getToken()) {
+    bootApp();
+  } else {
+    showLogin();
+  }
+})();
+</script>
+</body>
+</html>
