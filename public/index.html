@@ -9,20 +9,16 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet" />
 <style>
   :root {
-    --orange: #D94F04;
-    --orange-light: #FF664D;
-    --bg: #0A0A0B;
-    --bg-2: #131316;
-    --bg-3: #1B1B1F;
-    --bg-4: #25252B;
-    --line: #2A2A30;
-    --text: #F4F4F5;
-    --muted: #9A9AA0;
-    --muted-2: #6E6E76;
-    --green: #22C55E;
-    --yellow: #EAB308;
-    --blue: #3B82F6;
-    --red: #EF4444;
+    --orange: #FFFFFF;        /* primary accent now white (Option F) */
+    --orange-light: #E5E5E5;
+    --bg: #000000;
+    --bg-2: #0A0A0A;
+    --bg-3: #141414;
+    --bg-4: #1F1F1F;
+    --line: #2A2A2A;
+    --text: #FFFFFF;
+    --muted: #A0A0A0;
+    --muted-2: #6E6E6E;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -51,7 +47,7 @@
   label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
   .btn {
     background: var(--orange);
-    color: white;
+    color: #000;
     border: none;
     padding: 10px 16px;
     border-radius: 8px;
@@ -66,8 +62,8 @@
     border: 1px solid var(--line);
   }
   .btn-ghost:hover { background: var(--bg-3); }
-  .btn-danger { background: var(--red); }
-  .btn-danger:hover { background: #dc2626; }
+  .btn-danger { background: transparent; color: #fff; border: 1px solid #fff; }
+  .btn-danger:hover { background: #fff; color: #000; }
   .btn-sm { padding: 6px 10px; font-size: 12px; }
 
   /* ---------- Login ---------- */
@@ -78,8 +74,8 @@
     justify-content: center;
     padding: 24px;
     background:
-      radial-gradient(900px 600px at 80% -10%, rgba(217, 79, 4, 0.18), transparent 60%),
-      radial-gradient(700px 500px at -10% 110%, rgba(255, 102, 77, 0.12), transparent 60%),
+      radial-gradient(900px 600px at 80% -10%, rgba(255, 255, 255, 0.06), transparent 60%),
+      radial-gradient(700px 500px at -10% 110%, rgba(255, 255, 255, 0.03), transparent 60%),
       var(--bg);
   }
   .login-card {
@@ -99,7 +95,7 @@
     background: var(--orange);
     border-radius: 8px;
     display: flex; align-items: center; justify-content: center;
-    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #fff;
+    font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #000;
   }
   .brand-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; }
   .brand-sub { color: var(--muted); font-size: 12px; }
@@ -108,9 +104,9 @@
   .login-card .form-row { margin-bottom: 14px; }
   .login-card .btn { width: 100%; margin-top: 6px; }
   .login-error {
-    background: rgba(239, 68, 68, 0.12);
-    color: #fecaca;
-    border: 1px solid rgba(239, 68, 68, 0.3);
+    background: #1a1a1a;
+    color: #fff;
+    border: 1px solid #fff;
     padding: 10px 12px;
     border-radius: 8px;
     font-size: 13px;
@@ -174,7 +170,7 @@
   .avatar {
     width: 30px; height: 30px;
     background: var(--orange);
-    color: white;
+    color: #000;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     font-weight: 700;
@@ -239,11 +235,11 @@
     background: var(--bg-4);
     color: var(--text);
   }
-  .badge-stage-Draft { background: rgba(154, 154, 160, 0.18); color: #d4d4d8; }
-  .badge-stage-In-Progress { background: rgba(59, 130, 246, 0.18); color: #93c5fd; }
-  .badge-stage-In-Review { background: rgba(234, 179, 8, 0.18); color: #fde68a; }
-  .badge-stage-Done { background: rgba(34, 197, 94, 0.18); color: #86efac; }
-  .badge-team { background: rgba(217, 79, 4, 0.15); color: #ffb89a; }
+  .badge-stage-Draft { background: rgba(255,255,255,0.06); color: #999; }
+  .badge-stage-In-Progress { background: rgba(255,255,255,0.12); color: #ccc; }
+  .badge-stage-In-Review { background: rgba(255,255,255,0.20); color: #fff; }
+  .badge-stage-Done { background: #fff; color: #000; }
+  .badge-team { background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.18); }
 
   .empty {
     padding: 40px 20px;
@@ -343,8 +339,8 @@
     pointer-events: none;
   }
   .toast.show { opacity: 1; transform: translateY(0); }
-  .toast.error { border-color: var(--red); color: #fecaca; }
-  .toast.success { border-color: var(--green); color: #86efac; }
+  .toast.error { border-color: #fff; color: #fff; background: #1a1a1a; }
+  .toast.success { border-color: #fff; background: #fff; color: #000; }
 
   @media (max-width: 900px) {
     .layout { grid-template-columns: 1fr; }
