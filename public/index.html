@@ -600,6 +600,9 @@ function toast(msg, type = 'success') {
 
 function fmtRole(r) {
   if (!r) return '';
+  // Prefer the server-provided label map, fall back to a snake_case→Title Case best-effort.
+  const labels = (state.meta && state.meta.roleLabels) || {};
+  if (labels[r]) return labels[r];
   return r.split('_').map(w => w[0].toUpperCase() + w.slice(1)).join(' ');
 }
 function escapeHtml(s) {
