@@ -67,10 +67,14 @@ async function initDb() {
       created_by UUID REFERENCES users(id) ON DELETE SET NULL,
       due_date DATE,
       stage TEXT DEFAULT 'Draft',
+      doc_link TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
   `);
+
+  // Migration: add doc_link to existing installations
+  await pool.query(`ALTER TABLE items ADD COLUMN IF NOT EXISTS doc_link TEXT;`);
 
   // Seed default admin
   const existing = await pool.query('SELECT 1 FROM users WHERE email = $1', ['admin@spyne.ai']);
@@ -224,7 +228,7 @@ app.get('/api/items', authRequired, async (req, res) => {
 });
 
 app.post('/api/items', authRequired, async (req, res) => {
-  const { title, content_type, category, description, assigned_team, due_date, stage } = req.body || {};
+  const { title, content_type, category, description, assigned_team, due_date, stage, doc_link } = req.body || {};
   if (!title) return res.status(400).json({ error: 'Title is required' });
   if (assigned_team && !ROLES.includes(assigned_team)) {
     return res.status(400).json({ error: 'Invalid assigned_team' });
@@ -235,10 +239,10 @@ app.post('/api/items', authRequired, async (req, res) => {
   const id = uuidv4();
   await pool.query(
     `INSERT INTO items
-       (id, title, content_type, category, description, assigned_team, created_by, due_date, stage)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+       (id, title, content_type, category, description, assigned_team, created_by, due_date, stage, doc_link)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
     [id, title, content_type || null, category || null, description || null,
-      assigned_team || null, req.user.id, due_date || null, stage || 'Draft']
+      assigned_team || null, req.user.id, due_date || null, stage || 'Draft', doc_link || null]
   );
   res.json({ id });
 });
@@ -253,7 +257,7 @@ app.patch('/api/items/:id', authRequired, async (req, res) => {
     }
   }
 
-  const allowed = ['title', 'content_type', 'category', 'description', 'assigned_team', 'due_date', 'stage'];
+  const allowed = ['title', 'content_type', 'category', 'description', 'assigned_team', 'due_date', 'stage', 'doc_link'];
   const sets = [];
   const params = [];
   let i = 1;
