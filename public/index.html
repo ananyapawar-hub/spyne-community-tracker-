@@ -480,9 +480,15 @@
           </select>
         </div>
       </div>
-      <div class="form-row">
-        <label>Due date</label>
-        <input type="date" id="f_due_date" />
+      <div class="grid-2">
+        <div class="form-row">
+          <label>Due date</label>
+          <input type="date" id="f_due_date" />
+        </div>
+        <div class="form-row">
+          <label>Doc link</label>
+          <input type="url" id="f_doc_link" placeholder="https://docs.google.com/..." />
+        </div>
       </div>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost btn-danger" id="deleteBtn" style="display:none">Delete</button>
@@ -760,7 +766,7 @@ function renderTable() {
       <table>
         <thead>
           <tr>
-            <th>Title</th><th>Type</th><th>Category</th><th>Team</th><th>Stage</th><th>Due</th><th>Created by</th>
+            <th>Title</th><th>Type</th><th>Category</th><th>Team</th><th>Stage</th><th>Due</th><th>Created by</th><th>Doc link</th>
           </tr>
         </thead>
         <tbody>
@@ -775,6 +781,7 @@ function renderTable() {
               <td><span class="badge badge-stage-${(it.stage||'Draft').replace(/\\s+/g,'-')}">${escapeHtml(it.stage || 'Draft')}</span></td>
               <td>${it.due_date ? new Date(it.due_date).toLocaleDateString() : '—'}</td>
               <td style="color:var(--muted)">${escapeHtml(it.created_by_name || '—')}</td>
+              <td>${it.doc_link ? `<a href="${escapeHtml(it.doc_link)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation()" style="color:var(--orange);text-decoration:none;font-weight:500">Open ↗</a>` : '<span style="color:var(--muted-2)">—</span>'}</td>
             </tr>
           `).join('')}
         </tbody>
@@ -943,6 +950,7 @@ function openItemModal(item) {
   document.getElementById('f_assigned_team').value = item?.assigned_team || '';
   document.getElementById('f_stage').value = item?.stage || 'Draft';
   document.getElementById('f_due_date').value = item?.due_date ? item.due_date.slice(0,10) : '';
+  document.getElementById('f_doc_link').value = item?.doc_link || '';
 
   // Non-admin team members can't reassign team
   document.getElementById('f_assigned_team').disabled = (state.user.role !== 'admin');
@@ -965,6 +973,7 @@ document.getElementById('itemForm').addEventListener('submit', async (e) => {
     assigned_team: document.getElementById('f_assigned_team').value || null,
     stage: document.getElementById('f_stage').value,
     due_date: document.getElementById('f_due_date').value || null,
+    doc_link: document.getElementById('f_doc_link').value || null,
   };
   try {
     if (id) {
