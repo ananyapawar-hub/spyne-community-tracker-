@@ -20,12 +20,43 @@ const JWT_SECRET = process.env.JWT_SECRET || 'spyne-secret-2024';
 // -------------------------------------------------------------
 const ROLES = [
   'admin',
-  'tech_team_1', 'tech_team_2',
-  'content_team_1', 'content_team_2',
-  'product_team_1', 'product_team_2',
-  'cs_team_1', 'cs_team_2',
-  'branding_team_1', 'branding_team_2'
+  'content_team_demand_gen',
+  'product_marketing_team',
+  'sales_team',
+  'customer_success',
+  'branding',
+  'leadership_business_team',
+  'product_team',
+  'tech_team',
+  'program_mgmt_team'
 ];
+
+const ROLE_LABELS = {
+  admin: 'Admin',
+  content_team_demand_gen: 'Content Team / Demand Gen',
+  product_marketing_team: 'Product Marketing Team',
+  sales_team: 'Sales Team',
+  customer_success: 'Customer Success',
+  branding: 'Branding',
+  leadership_business_team: 'Leadership / Business Team Support',
+  product_team: 'Product Team',
+  tech_team: 'Tech Team',
+  program_mgmt_team: 'Program Mgmt Team'
+};
+
+// Maps any legacy role IDs from the old 10-team-with-1/2 structure to the new ones.
+const LEGACY_ROLE_MIGRATION = {
+  tech_team_1: 'tech_team',
+  tech_team_2: 'tech_team',
+  content_team_1: 'content_team_demand_gen',
+  content_team_2: 'content_team_demand_gen',
+  product_team_1: 'product_team',
+  product_team_2: 'product_team',
+  cs_team_1: 'customer_success',
+  cs_team_2: 'customer_success',
+  branding_team_1: 'branding',
+  branding_team_2: 'branding'
+};
 
 const STAGES = ['Draft', 'In Progress', 'In Review', 'Done'];
 const CONTENT_TYPES = ['Post', 'Poll', 'Event', 'Discussion', 'Resource', 'Announcement'];
@@ -75,6 +106,12 @@ async function initDb() {
 
   // Migration: add doc_link to existing installations
   await pool.query(`ALTER TABLE items ADD COLUMN IF NOT EXISTS doc_link TEXT;`);
+
+  // Migration: rename legacy team roles to new structure
+  for (const [oldRole, newRole] of Object.entries(LEGACY_ROLE_MIGRATION)) {
+    await pool.query('UPDATE users SET role = $1 WHERE role = $2', [newRole, oldRole]);
+    await pool.query('UPDATE items SET assigned_team = $1 WHERE assigned_team = $2', [newRole, oldRole]);
+  }
 
   // Seed default admin
   const existing = await pool.query('SELECT 1 FROM users WHERE email = $1', ['admin@spyne.ai']);
@@ -291,7 +328,7 @@ app.delete('/api/items/:id', authRequired, requireRole('admin'), async (req, res
 // Meta
 // -------------------------------------------------------------
 app.get('/api/meta', authRequired, (req, res) => {
-  res.json({ roles: ROLES, stages: STAGES, contentTypes: CONTENT_TYPES });
+  res.json({ roles: ROLES, roleLabels: ROLE_LABELS, stages: STAGES, contentTypes: CONTENT_TYPES });
 });
 
 // -------------------------------------------------------------
