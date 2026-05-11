@@ -306,6 +306,19 @@
     font-size: 11px;
     color: var(--muted);
   }
+  /* Urgency tints (kanban) — red ≤1 day or overdue, yellow 2–3, blue 4+ (just assigned) */
+  .kanban-card.urgency-red    { background: #FBC4B8; border-color: #DD7560; }
+  .kanban-card.urgency-yellow { background: #FADC8A; border-color: #C99A2B; }
+  .kanban-card.urgency-blue   { background: #BBD3EE; border-color: #5E8BC2; }
+  .kanban-card.urgency-red:hover    { border-color: #B8331A; }
+  .kanban-card.urgency-yellow:hover { border-color: #8A6713; }
+  .kanban-card.urgency-blue:hover   { border-color: #2C5C95; }
+  .kanban-card .due-tag {
+    font-weight: 600;
+  }
+  .kanban-card.urgency-red    .due-tag { color: #8A2412; }
+  .kanban-card.urgency-yellow .due-tag { color: #5C3D08; }
+  .kanban-card.urgency-blue   .due-tag { color: #1A3F73; }
 
   /* ---------- Modal ---------- */
   .modal-backdrop {
@@ -486,7 +499,7 @@
           <input type="date" id="f_due_date" />
         </div>
         <div class="form-row">
-          <label>Doc link</label>
+          <label>Asset link</label>
           <input type="url" id="f_doc_link" placeholder="https://docs.google.com/..." />
         </div>
       </div>
@@ -595,6 +608,35 @@ function fmtRole(r) {
 }
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+
+// Compute urgency for a kanban card based on due date and stage.
+// Thresholds: red ≤ 1 day (incl. overdue), yellow 2–3 days, green 4+ days.
+// Items without due_date OR already in 'Done' stage stay neutral.
+function urgency(item) {
+  if (!item.due_date) return { cls: '', label: '' };
+  if (item.stage === 'Done') {
+    return { cls: '', label: 'Due ' + new Date(item.due_date).toLocaleDateString() };
+  }
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(item.due_date); due.setHours(0,0,0,0);
+  const diffDays = Math.round((due - today) / 86400000);
+  let cls = '';
+  let label;
+  if (diffDays < 0) {
+    cls = 'urgency-red';
+    label = Math.abs(diffDays) === 1 ? '1 day overdue' : Math.abs(diffDays) + ' days overdue';
+  } else if (diffDays <= 1) {
+    cls = 'urgency-red';
+    label = diffDays === 0 ? 'Due today' : 'Due tomorrow';
+  } else if (diffDays <= 3) {
+    cls = 'urgency-yellow';
+    label = 'Due in ' + diffDays + ' days';
+  } else {
+    cls = 'urgency-blue';
+    label = 'Due in ' + diffDays + ' days';
+  }
+  return { cls, label };
 }
 
 // =============================================================
@@ -766,7 +808,7 @@ function renderTable() {
       <table>
         <thead>
           <tr>
-            <th>Title</th><th>Type</th><th>Category</th><th>Team</th><th>Stage</th><th>Due</th><th>Created by</th><th>Doc link</th>
+            <th>Title</th><th>Type</th><th>Category</th><th>Team</th><th>Stage</th><th>Due</th><th>Created by</th><th>Asset link</th>
           </tr>
         </thead>
         <tbody>
@@ -804,16 +846,18 @@ async function renderKanban(slot) {
     return `
       <div class="kanban-col">
         <h3>${stage} <span class="count">${items.length}</span></h3>
-        ${items.map(it => `
-          <div class="kanban-card" data-id="${it.id}">
+        ${items.map(it => {
+          const u = urgency(it);
+          return `
+          <div class="kanban-card ${u.cls}" data-id="${it.id}">
             <div class="kanban-card-title">${escapeHtml(it.title)}</div>
             <div class="kanban-card-meta">
               ${it.content_type ? `<span class="badge">${escapeHtml(it.content_type)}</span>` : ''}
               ${it.assigned_team ? `<span class="badge badge-team">${fmtRole(it.assigned_team)}</span>` : ''}
-              ${it.due_date ? `<span>· Due ${new Date(it.due_date).toLocaleDateString()}</span>` : ''}
+              ${it.due_date ? `<span class="due-tag">· ${u.label}</span>` : ''}
             </div>
           </div>
-        `).join('') || '<div class="empty" style="padding:14px">No items</div>'}
+        `;}).join('') || '<div class="empty" style="padding:14px">No items</div>'}
       </div>`;
   }).join('');
   slot.innerHTML = `
